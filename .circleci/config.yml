@@ -21,12 +21,12 @@ jobs:
             - ~/.gradle
           key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
       - run:
-          name: Run Builds
-          command: ./gradlew clean assembleDebug
-      artifacts:
-        name: "build_${CI_PROJECT_NAME}_${CI_BUILD_REF_NAME}_${CI_JOB_NAME}_${CI_JOB_ID}"
-        when: always
-        paths:
-          - app/build/outputs/apk/
-          - app/build/outputs/mapping/
+          name: Download Dependencies
+          command: ./gradlew androidDependencies
+      - run:
+          name: Initial build
+          command: ./gradlew clean assembleDebug --no-daemon --stacktrace
+      - store_artifacts:
+        path: app/build/outputs/apk/
+        destination: apks/
       # See https://circleci.com/docs/2.0/deployment-integrations/ for deploy examples
