@@ -1,0 +1,59 @@
+def GROUP_NAME = "Deploy_Crashlytics"
+
+def getWorkingBranch() {
+  return "git rev-parse --abbrev-ref HEAD".execute().text.trim()
+}
+
+def getReleaseNotes() {
+  def branch = getWorkingBranch()
+  def date = new Date()
+  date = date.minus(14)
+  def formattedDate = date.format('yyyy-MM-dd')
+
+  return "git log $branch --pretty=format:\"%s\" --date=short --after=\"$formattedDate\"".execute().text.
+      trim()
+}
+
+task buildProdReleaseCandidate() {
+  group = GROUP_NAME
+  dependsOn clean
+  finalizedBy 'assembleProdProdSDKRelease'
+}
+
+task sendProdReleaseCandidateToCrashlytics() {
+  group = GROUP_NAME
+  dependsOn buildProdReleaseCandidate
+  finalizedBy 'crashlyticsUploadDistributionProdProdSDKRelease'
+}
+
+task buildStagingReleaseCandidate() {
+  group = GROUP_NAME
+  dependsOn clean
+  finalizedBy 'assembleStagingProdSDKRelease'
+}
+
+task sendStagingReleaseCandidateToCrashlytics() {
+  group = GROUP_NAME
+  dependsOn buildStagingReleaseCandidate
+  finalizedBy 'crashlyticsUploadDistributionStagingProdSDKRelease'
+}
+
+project.ext {
+  deployRelease = new Object() {
+    def betaDistributionNotifications = true
+    def betaDistributionReleaseNotes = getReleaseNotes()
+    def betaDistributionEmailsFilePath = "${projectDir}/../beta_distribution_emails.txt"
+  }
+}
+
+android {
+  buildTypes {
+    release {
+      println project.ext.deployRelease.betaDistributionEmailsFilePath
+
+      ext.betaDistributionNotifications = project.ext.deployRelease.betaDistributionNotifications
+      ext.betaDistributionReleaseNotes = project.ext.deployRelease.betaDistributionReleaseNotes
+      ext.betaDistributionEmailsFilePath = project.ext.deployRelease.betaDistributionEmailsFilePath
+    }
+  }
+}

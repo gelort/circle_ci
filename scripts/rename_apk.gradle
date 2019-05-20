@@ -1,0 +1,17 @@
+android {
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+                def versionCode = variant.versionCode
+                def versionName = variant.versionName
+                if (versionCode < 10) versionCode = "0" + versionCode
+
+                def flavors = ""
+
+                variant.productFlavors.each { productFlavor ->
+                    flavors += productFlavor.name + "_"
+                }
+
+                outputFileName = "${applicationId}_${flavors}vc_${versionCode}_${variant.buildType.name}_${versionName}.apk"
+        }
+    }
+}

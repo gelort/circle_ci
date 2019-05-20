@@ -1,0 +1,34 @@
+Properties signProp = new Properties()
+try {
+    signProp.load(rootProject.file('sign.properties').newDataInputStream())
+
+    project.ext {
+        release = new Object() {
+            def storeFile = signProp.get("release.storeFile")
+            def storePassword = signProp.get("release.storePassword")
+            def keyAlias = signProp.get("release.keyAlias")
+            def keyPassword = signProp.get("release.keyPassword")
+        }
+    }
+
+} catch (IOException e) {
+    project.ext {
+        release = new Object() {
+            def storeFile = project.hasProperty('keyStoreFile') ? project.getProperty('keyStoreFile'): "default"
+            def storePassword = project.hasProperty('storePassword') ? project.getProperty('storePassword'): "default"
+            def keyAlias = project.hasProperty('keyAlias') ? project.getProperty('keyAlias'): "default"
+            def keyPassword = project.hasProperty('keyPassword') ? project.getProperty('keyPassword'): "default"
+        }
+    }
+}
+
+android {
+    signingConfigs {
+        release {
+            storeFile file(project.ext.release.storeFile)
+            storePassword project.ext.release.storePassword
+            keyAlias project.ext.release.keyAlias
+            keyPassword project.ext.release.keyPassword
+        }
+    }
+}

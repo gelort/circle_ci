@@ -1,0 +1,23 @@
+Properties fabricProperty = new Properties()
+try {
+    fabricProperty.load(rootProject.file('fabric.properties').newDataInputStream())
+
+    project.ext {
+        fabric = new Object() {
+            def apiKey = fabricProperty.get("apiKey")
+        }
+    }
+
+} catch (IOException e) {
+    project.ext {
+        fabric = new Object() {
+            def apiKey = project.hasProperty('fabricApiKey') ? project.getProperty('fabricApiKey'): ""
+        }
+    }
+}
+
+android {
+    defaultConfig {
+        manifestPlaceholders = [fabricApiKey:project.ext.fabric.apiKey]
+    }
+}
